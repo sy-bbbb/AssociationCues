@@ -1,0 +1,70 @@
+﻿Global Reef Fish Collection Pack
+
+
+The Pack brings a vibrant collection of 24 marine fish from around the world to your Unity project. Perfect for game developers, AR/VR creators, and environment designers, this pack adds authentic diversity and color to any underwater scene. All models are optimized for real-time use and ideal for mobile, desktop, or console applications.
+
+
+Each fish has an animation loop. 
+There are 3 kinds of textures: Albedo, Metallic, Normal. 2K resolution
+
+
+The package contains the following fish:
+1. Angelfish Scribbled 
+2. Angelfish Majestic
+3. Angelfish BlueFace 
+4. Angelfish Goldflake 
+5. Angelfish Flagfin 
+6. Angelfish Blueline 
+7. Angelfish Queensland 
+8. Angelfish Clarion 
+9. Angelfish Multibarred
+10. Angelfish Queen 
+11. Moorish Idol 
+12. Black Durgon
+13. Orangespotted Filefish
+14. Klunzinger Wrasse 
+15. Redcoat 
+16. Green Queen Parrotfish 
+17. Aweoweo 
+18. Scrawled Filefish  
+19. Goby Nemateleotris Magnifica  
+20. Banggai Cardinalfish
+21. Boxfish 
+22. Mandarinfish
+23. Napoleon Wrasse
+24. Sunfish MolaMola
+
+
+Number of textures: 190
+Texture dimensions: 2048x2048 px
+Polygon count of Angelfish Scribbled:  Verts:1666
+Polygon count of Angelfish Majestic:    Verts:1936
+Polygon count of Angelfish BlueFace:   Verts:1869
+Polygon count of Angelfish Goldflake :  Verts:2038
+Polygon count of Angelfish Flagfin:        Verts:2035
+Polygon count of Angelfish Blueline :     Verts:2031
+Polygon count of Angelfish Queensland : Verts:2036
+Polygon count of Angelfish Clarion :          Verts:1957
+Polygon count of Angelfish Multibarred:    Verts:1838
+Polygon count of Angelfish Queen:            Verts:2102
+Polygon count of Moorish Idol:                     Verts:1588
+Polygon count of Black Durgon:                  Verts:1298
+Polygon count of Orangespotted Filefish     Verts:1284
+Polygon count of Klunzinger Wrasse           Verts:1549
+Polygon count of Redcoat                            Verts:1821
+Polygon count of Green Queen Parrotfish    Verts:1626
+Polygon count of Aweoweo                           Verts:3008
+Polygon count of Scrawled Filefish                Verts:1201
+Polygon count of Goby Nemateleotris Magnifica        Verts:1979
+Polygon count of Banggai Cardinalfish          Verts:1806
+Polygon count of Boxfish                               Verts:1147
+Polygon count of Mandarinfish                      Verts:1677
+Polygon count of Napoleon Wrasse              Verts:1491
+Polygon count of Sunfish MolaMola               Verts:2575
+
+
+Number of meshes/prefabs: 2
+Animation count: 1
+UV mapping: Yes
+LOD information (count, number of levels): no
+Types of materials and texture maps (e.g., PBR): Shader Standart. Albedo, Metallic, Normal map
