@@ -898,7 +898,6 @@ GameObject:
   m_Component:
   - component: {fileID: 3106661171177141808}
   - component: {fileID: 8443899906568835784}
-  - component: {fileID: 8192730158835305280}
   - component: {fileID: 4504303184863493907}
   m_Layer: 0
   m_Name: TextMeshPro
@@ -968,14 +967,6 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
---- !u!222 &8192730158835305280
-CanvasRenderer:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 7381775876651612510}
-  m_CullTransparentMesh: 0
 --- !u!114 &4504303184863493907
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1167,7 +1158,7 @@ GameObject:
   - component: {fileID: 1475368948258614701}
   - component: {fileID: 2981558898236359377}
   - component: {fileID: 497658054297336296}
-  m_Layer: 0
+  m_Layer: 6
   m_Name: PressableButtonHoloLens2
   m_TagString: Untagged
   m_Icon: {fileID: 0}

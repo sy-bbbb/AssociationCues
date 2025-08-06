@@ -66,7 +66,7 @@ public class BlockDataManager : MonoBehaviour
             {
                 StudySettings.Task.task1, new TaskData
                 {
-                    TaskRootTransform = new RootTransform { Position = new Vector3 (0f, -0.5f, 3f), Scale = Vector3.one },
+                    TaskRootTransform = new RootTransform { Position = new Vector3 (0f, -0.2f, 2f), Scale = Vector3.one },
                     BlockPrefabNames = new List<List<string>>
                     {
                         new List<string> { "OrangeClownfish", "PurpleTang", "FlameAngelfish", "NapoleonWrasse", "Boxfish", "Bannerfish" },
@@ -80,7 +80,7 @@ public class BlockDataManager : MonoBehaviour
             {
                 StudySettings.Task.task2, new TaskData
                 {
-                    TaskRootTransform = new RootTransform { Position =  new Vector3 (0f, -0.5f, 3f), Scale = Vector3.one * 0.5f },
+                    TaskRootTransform = new RootTransform { Position =  new Vector3 (0f, -0.2f, 2f), Scale = Vector3.one * 0.5f },
                     BlockPrefabNames = new List<List<string>>
                     {
                         new List<string> { "BlackDurgon", "FlameAngelfish", "AngelfishMultibarred", "Threadfin", "Bannerfish", "ClownfishBlack" },

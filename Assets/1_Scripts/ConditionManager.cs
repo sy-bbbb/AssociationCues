@@ -10,20 +10,12 @@ using static StudySettings;
 
 
 [RequireComponent(typeof(PhotonView))]
-public class ConditionManager : MonoBehaviourPun
+public class ConditionManager : MonoBehaviourPunCallbacks
 {
-    //private Task currentTask;
-    //private int blockID;
-    private Condition currentCondition;
-    private List<GameObject> sceneObjects = new();
-
     [Header("Network Settings")]
     [SerializeField] private NetworkManager networkManager;
-    private Player smartphone;
-    private bool isConnectedToPhone = false;
 
     [Header("Component References")]
-    private TaskManager taskManager;
     [SerializeField] private GameObject phoneObject;
     [SerializeField] private PhoneLabelHandler phoneLabelHandler;
 
@@ -38,44 +30,57 @@ public class ConditionManager : MonoBehaviourPun
     [SerializeField] private Material baseOutlineMaterial;
     [SerializeField] private Color highlightColor = Color.white;
 
-    // Private state
+    // State Management
+    private TaskManager taskManager;
+    private PhotonView pv;
+    private Player smartphone;
+
+    private Condition currentCondition;
+    private readonly List<GameObject> sceneObjects = new List<GameObject>();
+    private readonly Dictionary<GameObject, Color> objectColors = new Dictionary<GameObject, Color>();
+
+    // Selection State
     private GameObject selectedObject;
     private GameObject lastHoveredButton;
+
+    //Interaction State
+    private bool isConnectedToPhone = false;
+    private bool isPointing = false;
+    private bool selectActionTriggered = false;
+
+    //Visual Components
     private LineRenderer connectionLine;
     private LineRenderer pointingRayLine;
-    private Dictionary<GameObject, Color> objectColors = new();
-    private PhotonView photonView;
-    private bool isPointing = false;
-    private bool selectActionTriggered = false; 
+
 
     private void Start()
     {
-        taskManager = GetComponent<TaskManager>();
-        photonView = PhotonView.Get(this);
-        InitializePointingRay();
-    }
-
-
-    public void Initialize(Condition condition, Task task, int block, List<GameObject> allSceneObjects)
-    {
-        currentCondition = condition;
-        //currentTask = task;
-        //blockID = block;
-        sceneObjects = allSceneObjects;
-
-        ConfigureCondition();
-        phoneLabelHandler.InitializePhoneUI(sceneObjects, objectColors, currentCondition);
+        InitialiseComponents();
+        InitialisePointingRay();
     }
 
     private void Update()
     {
-        if (!isConnectedToPhone && networkManager.CheckConnectionToPhone())
-            InitializeConnection();
-
         HandleRaySelection();
+        UpdateVisualCues();
+    }
 
-        if (currentCondition == Condition.Proximity) HandleProximitySelection();
-        if (currentCondition == Condition.Line && selectedObject != null) UpdateLineCue();
+    private void InitialiseComponents()
+    {
+        taskManager = GetComponent<TaskManager>();
+        pv = PhotonView.Get(this);
+    }
+
+
+    public void Initialise(Condition condition, Task task, int block, List<GameObject> allSceneObjects)
+    {
+        currentCondition = condition;
+        sceneObjects.Clear();
+        sceneObjects.AddRange(allSceneObjects);
+
+        ConfigureCondition();
+        phoneLabelHandler.InitializePhoneUI(sceneObjects, objectColors, currentCondition);
+        pv.RPC("InitialiseUIOnPhone", smartphone);
     }
 
 
@@ -87,30 +92,65 @@ public class ConditionManager : MonoBehaviourPun
                 AssignUniqueColorsToObjects();
                 break;
             case Condition.Line:
-                InitializeLineCue();
+                InitialiseLineCue();
                 break;
         }
     }
 
-    private void InitializeConnection()
+    #region Connection Management
+
+    public override void OnJoinedRoom()
+    {
+        CheckForExistingPhoneConnection();
+    }
+    private void CheckForExistingPhoneConnection()
+    {
+        Player existingPhone = PhotonNetwork.PlayerListOthers.FirstOrDefault(p => p.NickName == NetworkManager.SMARTPHONE_NICKNAME);
+        if (existingPhone != null)
+            EstablishPhoneConnection(existingPhone);
+    }
+
+    public override void OnPlayerEnteredRoom(Player newPlayer)
+    {
+        if (newPlayer.NickName == NetworkManager.SMARTPHONE_NICKNAME && !isConnectedToPhone)
+            EstablishPhoneConnection(newPlayer);
+    }
+
+    public override void OnPlayerLeftRoom(Player otherPlayer)
+    {
+        if (otherPlayer == smartphone && isConnectedToPhone)
+            HandlePhoneDisconnection();
+    }
+
+    private void EstablishPhoneConnection(Player phonePlayer)
     {
         isConnectedToPhone = true;
-        smartphone = PhotonNetwork.PlayerListOthers.FirstOrDefault(p => p.NickName == "smartphone");
-
-        if (smartphone != null)
-        {
-            Debug.Log("Connection to smartphone established. Syncing initial data.");
-            photonView.RPC("ReceiveInitialDataOnPhone", smartphone, (object)phoneLabelHandler.LabelContents.ToArray());
-        }
-
+        smartphone = phonePlayer;
+        SyncInitialDataWithPhone();
         taskManager.ReportPhoneConnected();
     }
+
+    private void HandlePhoneDisconnection()
+    {
+        isConnectedToPhone = false;
+        smartphone = null;
+        Debug.Log("Phone disconnected");
+    }
+
+    public void SyncInitialDataWithPhone()
+    {
+        if (smartphone != null)
+        {
+            Debug.Log("Syncing initial data.");
+            pv.RPC("ReceiveInitialDataOnPhone", smartphone, (object)phoneLabelHandler.LabelContents.ToArray());
+        }
+    }
+    #endregion
 
     #region Interaction Handlers
 
     private void HandleRaySelection()
     {
-        //bool isPointing = Input.GetKey(KeyCode.LeftControl) || Input.GetKey(KeyCode.RightControl);
         pointingRayLine.enabled = isPointing;
 
         if (!isPointing)
@@ -126,6 +166,12 @@ public class ConditionManager : MonoBehaviourPun
         ProcessRaycastHit(didHit, hit);
 
         if (selectActionTriggered) selectActionTriggered = false;
+    }
+
+    private void UpdateVisualCues()
+    {
+        if (currentCondition == Condition.Proximity) HandleProximitySelection();
+        if (currentCondition == Condition.Line && selectedObject != null) UpdateLineCue();
     }
 
     private void UpdateRayVisuals(bool didHit, Vector3 hitPoint, Vector3 origin, Vector3 direction)
@@ -310,7 +356,7 @@ public class ConditionManager : MonoBehaviourPun
         if (smartphone != null)
         {
             float[] colorArray = { tagColor.r, tagColor.g, tagColor.b, tagColor.a };
-            photonView.RPC("ControlLabelOnPhone", smartphone, true, id, colorArray, "");
+            pv.RPC("ControlLabelOnPhone", smartphone, true, id, colorArray, "");
         }
     }
 
@@ -327,7 +373,7 @@ public class ConditionManager : MonoBehaviourPun
         phoneLabelHandler.HideLabel();
 
         if (smartphone != null)
-            photonView.RPC("ControlLabelOnPhone", smartphone, false, -1, null, "");
+            pv.RPC("ControlLabelOnPhone", smartphone, false, -1, null, "");
     }
 
     private void ChangeHighlight(GameObject obj, bool enabled)
@@ -340,13 +386,13 @@ public class ConditionManager : MonoBehaviourPun
     public void SendApproachMessageToPhone()
     {
         if (smartphone != null)
-            photonView.RPC("ControlLabelOnPhone", smartphone, true, -1, null, "설명을 보려면 가까이 다가가주세요.");
+            pv.RPC("ControlLabelOnPhone", smartphone, true, -1, null, "설명을 보려면 가까이 다가가주세요.");
     }
 
     public void SendHideMessageToPhone()
     {
         if (smartphone != null)
-            photonView.RPC("ControlLabelOnPhone", smartphone, false, -1, null, "");
+            pv.RPC("ControlLabelOnPhone", smartphone, false, -1, null, "");
     }
 
     public void SelectObjectExternally(GameObject obj) => SelectObject(obj);
@@ -354,7 +400,7 @@ public class ConditionManager : MonoBehaviourPun
 
     #endregion
 
-    #region Initialization
+    #region Initialisation
     private void AssignUniqueColorsToObjects()
     {
         Color[] palette = { Color.red, Color.green, Color.blue, Color.yellow, Color.cyan, Color.magenta };
@@ -372,7 +418,7 @@ public class ConditionManager : MonoBehaviourPun
         }
     }
 
-    private void InitializePointingRay()
+    private void InitialisePointingRay()
     {
         pointingRayLine = new GameObject("PhonePointingRay").AddComponent<LineRenderer>();
         pointingRayLine.material = new Material(Shader.Find("Unlit/Color")) { color = Color.cyan };
@@ -382,7 +428,7 @@ public class ConditionManager : MonoBehaviourPun
         pointingRayLine.enabled = false;
     }
 
-    private void InitializeLineCue()
+    private void InitialiseLineCue()
     {
         connectionLine = new GameObject("SelectionLineCue").AddComponent<LineRenderer>();
         connectionLine.material = Resources.Load<Material>("DashedLineMaterial");

@@ -1,8 +1,8 @@
 using Microsoft.MixedReality.Toolkit.UI;
 using System.Collections.Generic;
 using System.Linq;
-using TMPro;
 using UnityEngine;
+using Microsoft.MixedReality.Toolkit.Input;
 
 public class TaskManager : MonoBehaviour
 {
@@ -11,10 +11,6 @@ public class TaskManager : MonoBehaviour
     [SerializeField] private StudySettings.Task currentTask = StudySettings.Task.task1;
     [SerializeField] private int blockID = 1;
     [SerializeField] private StudySettings.Condition currentCondition = StudySettings.Condition.Proximity;
-    public StudySettings.Task CurrentTask => currentTask;
-    public int BlockID => blockID;
-    public List<string> CurrentBlockPrefabNames => BlockDataManager.Instance.GetPrefabNamesForBlock(currentTask, blockID);
-
 
     [Header("Component References")]
     [SerializeField] private ConditionManager conditionManager;
@@ -27,6 +23,12 @@ public class TaskManager : MonoBehaviour
     [SerializeField] private Transform sceneObjectRoot;
     [SerializeField] private string prefabsResourcePath = "SceneObjects";
 
+    // --- Public properties ---
+    public StudySettings.Task CurrentTask => currentTask;
+    public int BlockID => blockID;
+    public List<string> CurrentBlockPrefabNames => BlockDataManager.Instance.GetPrefabNamesForBlock(currentTask, blockID);
+
+
     // --- Private State ---
     private List<GameObject> sceneObjects = new List<GameObject>();
     private bool isPhoneConnected = false;
@@ -35,9 +37,23 @@ public class TaskManager : MonoBehaviour
 
     void Start()
     {
-        if (startButton != null) startButton.GetComponent<Interactable>().IsEnabled = false;
-        if (quizPanel != null) quizPanel.SetActive(false);
+        InitialisePointers();
+        InitialiseUI();
         BeginPreloading();
+    }
+
+    private void InitialisePointers()
+    {
+        PointerUtils.SetHandRayPointerBehavior(PointerBehavior.AlwaysOff);
+        PointerUtils.SetGazePointerBehavior(PointerBehavior.AlwaysOff);
+    }
+    
+    private void InitialiseUI()
+    {
+        if (startButton != null)
+            startButton.GetComponent<Interactable>().IsEnabled = false;
+        if (quizPanel != null)
+            quizPanel.SetActive(false);
     }
 
     private void BeginPreloading()
@@ -68,19 +84,20 @@ public class TaskManager : MonoBehaviour
 
     private void CheckAllReady()
     {
-        if (isPhoneConnected && areLabelsLoaded && areQuizzesLoaded)
-        {
-            if (startButton != null) startButton.GetComponent<Interactable>().IsEnabled = true;
-        }
+        bool allSystemsReady = isPhoneConnected && areLabelsLoaded && areQuizzesLoaded;
+        if (allSystemsReady && startButton != null)
+            startButton.GetComponent<Interactable>().IsEnabled = true;
     }
 
     public void StartExperiment()
     {
-        if (startButton != null) startButton.SetActive(false);
         StudyLogger.Instance.StartLogging(participantID, currentTask.ToString(), currentCondition.ToString(), blockID.ToString());
         AssignSceneObjects();
-        conditionManager.Initialize(currentCondition, currentTask, blockID, sceneObjects);
-        if (quizPanel != null) quizPanel.SetActive(true);
+        conditionManager.Initialise(currentCondition, currentTask, blockID, sceneObjects);
+        if (startButton != null)
+            startButton.SetActive(false);
+        if (quizPanel != null)
+            quizPanel.SetActive(true);
     }
 
     private void AssignSceneObjects()
@@ -88,7 +105,7 @@ public class TaskManager : MonoBehaviour
         sceneObjects.Clear();
 
         RootTransform rootTransform = BlockDataManager.Instance.GetRootTransformForTask(currentTask);
-        sceneObjectRoot.position = rootTransform.Position;
+        sceneObjectRoot.localPosition = rootTransform.Position;
         sceneObjectRoot.localScale = rootTransform.Scale;
 
         List<string> requiredNames = BlockDataManager.Instance.GetPrefabNamesForBlock(currentTask, blockID);
@@ -121,9 +138,5 @@ public class TaskManager : MonoBehaviour
         }
     }
 
-    public void DestroySceneObjects()
-    {
-        foreach(GameObject obj in sceneObjects)
-            Destroy(obj);
-    }
+    public void DestroySceneObjects() => Destroy(sceneObjectRoot.gameObject);
 }

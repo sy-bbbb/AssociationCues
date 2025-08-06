@@ -7,7 +7,7 @@ using UnityEngine;
 public class QuizManager : MonoBehaviour
 {
     [Header("External Managers")]
-    [SerializeField] private TaskManager taskManager;
+    private TaskManager taskManager;
     
     [Header("Quiz Content")]
     [SerializeField] private List<Question> questions = new List<Question>();
@@ -17,13 +17,15 @@ public class QuizManager : MonoBehaviour
     [SerializeField] private TextMeshPro questionLabel;
     private int currentQuestionIndex = 0;
 
+    private void Start()
+    {
+        taskManager = GetComponent<TaskManager>();
+    }
+
     void ShowQuestion(int index)
     {
         if (index >= questions.Count)
         {
-            questionLabel.text = "ÄûÁî Á¾·á!";
-            StudyLogger.Instance.StopLogging();
-            taskManager.DestroySceneObjects();
             foreach (var btn in buttonHelpers)
             {
                 btn.MainLabelText = "";
@@ -31,6 +33,10 @@ public class QuizManager : MonoBehaviour
                 interactable.IsEnabled = false;
                 interactable.OnClick.RemoveAllListeners();
             }
+            questionLabel.text = "ÄûÁî Á¾·á!";
+            StudyLogger.Instance.StopLogging();
+            Debug.Log(taskManager);
+            taskManager.DestroySceneObjects();
             return;
         }
 
